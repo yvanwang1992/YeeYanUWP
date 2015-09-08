@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
+using YeeYanUWP.Models;
 
 namespace YeeYanUWP.ViewModels
 {
@@ -27,8 +28,15 @@ namespace YeeYanUWP.ViewModels
             if (IsInDesignMode )
             {
                 Title = "Title is a little different in Design mode";
+                Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
+                Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
+                Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
+
             }
-        
+            Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
+            Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
+            Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
+
         }
 
         //propvm tab tab string tab Title
@@ -44,9 +52,118 @@ namespace YeeYanUWP.ViewModels
         #endregion
 
 
-        
+        //Channels for the listview in spitview.pane
+        public ObservableCollection<Channel> Channels
+        {
+            get { return _ChannelsLocator(this).Value; }
+            set { _ChannelsLocator(this).SetValueAndTryNotify(value); }
+        }
+        #region Property ObservableCollection<Channel> Channels Setup        
+        protected Property<ObservableCollection<Channel>> _Channels = new Property<ObservableCollection<Channel>> { LocatorFunc = _ChannelsLocator };
+        static Func<BindableBase, ValueContainer<ObservableCollection<Channel>>> _ChannelsLocator = RegisterContainerLocator<ObservableCollection<Channel>>("Channels", model => model.Initialize("Channels", ref model._Channels, ref _ChannelsLocator, _ChannelsDefaultValueFactory));
+        static Func<ObservableCollection<Channel>> _ChannelsDefaultValueFactory = () => { return new ObservableCollection<Channel>(); };
+        #endregion
+
+        //Current Channel
+        public Channel CurrentChannel
+        {
+            get { return _CurrentChannelLocator(this).Value; }
+            set { _CurrentChannelLocator(this).SetValueAndTryNotify(value); }
+        }
+        #region Property Channel CurrentChannel Setup        
+        protected Property<Channel> _CurrentChannel = new Property<Channel> { LocatorFunc = _CurrentChannelLocator };
+        static Func<BindableBase, ValueContainer<Channel>> _CurrentChannelLocator = RegisterContainerLocator<Channel>("CurrentChannel", model => model.Initialize("CurrentChannel", ref model._CurrentChannel, ref _CurrentChannelLocator, _CurrentChannelDefaultValueFactory));
+        static Func<Channel> _CurrentChannelDefaultValueFactory = () => { return default(Channel); };
+        #endregion
+
+
+        #region Commands
+        //lvPane SelectionChanged
+        public CommandModel<ReactiveCommand, String> CommandLvPaneSelecteionChanged
+        {
+            get { return _CommandLvPaneSelecteionChangedLocator(this).Value; }
+            set { _CommandLvPaneSelecteionChangedLocator(this).SetValueAndTryNotify(value); }
+        }
+        #region Property CommandModel<ReactiveCommand, String> CommandLvPaneSelecteionChanged Setup        
+        protected Property<CommandModel<ReactiveCommand, String>> _CommandLvPaneSelecteionChanged = new Property<CommandModel<ReactiveCommand, String>> { LocatorFunc = _CommandLvPaneSelecteionChangedLocator };
+        static Func<BindableBase, ValueContainer<CommandModel<ReactiveCommand, String>>> _CommandLvPaneSelecteionChangedLocator = RegisterContainerLocator<CommandModel<ReactiveCommand, String>>("CommandLvPaneSelecteionChanged", model => model.Initialize("CommandLvPaneSelecteionChanged", ref model._CommandLvPaneSelecteionChanged, ref _CommandLvPaneSelecteionChangedLocator, _CommandLvPaneSelecteionChangedDefaultValueFactory));
+        static Func<BindableBase, CommandModel<ReactiveCommand, String>> _CommandLvPaneSelecteionChangedDefaultValueFactory =
+            model =>
+            {
+                var resource = "LvPaneSelecteionChanged";           // Command resource  
+                var commandId = "LvPaneSelecteionChanged";
+                var vm = CastToCurrentType(model);
+                var cmd = new ReactiveCommand(canExecute: true) { ViewModel = model }; //New Command Core
+                cmd
+                    .DoExecuteUIBusyTask(
+                        vm,
+                        async e =>
+                        {
+                            var seletedItem = e.EventArgs.Parameter as Channel;
+                            if (seletedItem != null)
+                            {
+                                vm.CurrentChannel = seletedItem;
+                            }
+                            //Todo: Add LvPaneSelecteionChanged logic here, or
+                            //await MVVMSidekick.Utilities.TaskExHelper.Yield();
+                        }
+                    )
+                    .DoNotifyDefaultEventRouter(vm, commandId)
+                    .Subscribe()
+                    .DisposeWith(vm);
+
+                var cmdmdl = cmd.CreateCommandModel(resource);
+                cmdmdl.ListenToIsUIBusy(model: vm, canExecuteWhenBusy: false);
+                return cmdmdl;
+            };
+        #endregion
+
+
+        public CommandModel<ReactiveCommand, String> CommandLvContentSelectionChanged
+        {
+            get { return _CommandLvContentSelectionChangedLocator(this).Value; }
+            set { _CommandLvContentSelectionChangedLocator(this).SetValueAndTryNotify(value); }
+        }
+        #region Property CommandModel<ReactiveCommand, String> CommandLvContentSelectionChanged Setup        
+        protected Property<CommandModel<ReactiveCommand, String>> _CommandLvContentSelectionChanged = new Property<CommandModel<ReactiveCommand, String>> { LocatorFunc = _CommandLvContentSelectionChangedLocator };
+        static Func<BindableBase, ValueContainer<CommandModel<ReactiveCommand, String>>> _CommandLvContentSelectionChangedLocator = RegisterContainerLocator<CommandModel<ReactiveCommand, String>>("CommandLvContentSelectionChanged", model => model.Initialize("CommandLvContentSelectionChanged", ref model._CommandLvContentSelectionChanged, ref _CommandLvContentSelectionChangedLocator, _CommandLvContentSelectionChangedDefaultValueFactory));
+        static Func<BindableBase, CommandModel<ReactiveCommand, String>> _CommandLvContentSelectionChangedDefaultValueFactory =
+            model =>
+            {
+                var resource = "LvContentSelectionChanged";           // Command resource  
+                var commandId = "LvContentSelectionChanged";
+                var vm = CastToCurrentType(model);
+                var cmd = new ReactiveCommand(canExecute: true) { ViewModel = model }; //New Command Core
+                cmd
+                    .DoExecuteUIBusyTask(
+                        vm,
+                        async e =>
+                        {
+                            //Todo: Add LvContentSelectionChanged logic here, or
+                            var selectedItem = e.EventArgs.Parameter as Catalog;
+                            if (selectedItem != null)
+                            {
+                                await vm.StageManager.DefaultStage.ShowAndGetViewModel(new DetailPage_Model(selectedItem));        
+                            }
+                            //await MVVMSidekick.Utilities.TaskExHelper.Yield();
+                        }
+                    )
+                    .DoNotifyDefaultEventRouter(vm, commandId)
+                    .Subscribe()
+                    .DisposeWith(vm);
+
+                var cmdmdl = cmd.CreateCommandModel(resource);
+                cmdmdl.ListenToIsUIBusy(model: vm, canExecuteWhenBusy: false);
+                return cmdmdl;
+            };
+        #endregion
+
+
+        #endregion
+
+
         #region Life Time Event Handling
-    
+
         ///// <summary>
         ///// This will be invoked by view when this viewmodel instance is set to view's ViewModel property. 
         ///// </summary>

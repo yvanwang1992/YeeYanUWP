@@ -27,5 +27,10 @@ namespace YeeYanUWP
         {
             this.InitializeComponent();
         }
+            
+        private void Panel_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.splitView.IsPaneOpen = !this.splitView.IsPaneOpen;
+        }
     }
 }
