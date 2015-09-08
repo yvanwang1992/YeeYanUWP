@@ -96,7 +96,6 @@
     <Compile Include="DetailPage.xaml.cs">
       <DependentUpon>DetailPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Helper\CommonHelper.cs" />
     <Compile Include="Models\Article.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Channel.cs" />
