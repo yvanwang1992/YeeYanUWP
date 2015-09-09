@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace YeeYanUWP.Models
 {
 
-    //[DataContract(IsReference=true) ] //if you want
+    [DataContract(IsReference = true)] //if you want
     public class Catalog : BindableBase<Catalog>
     {
         //public Catalog()
@@ -18,12 +19,13 @@ namespace YeeYanUWP.Models
         //    {
         //        //Add design time demo data init here. These will not execute in runtime.
         //    }
-        
+
         //}
 
         //Use propvm + tab +tab  to create a new property of bindable here:
 
         //title
+        [DataMember]
         public string Title
         {
             get { return _TitleLocator(this).Value; }
@@ -42,6 +44,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Brief Content
+        [DataMember]
         public string BriefContent
         {
             get { return _BriefContentLocator(this).Value; }
@@ -54,6 +57,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Image Url
+        [DataMember]
         public string ImageUrl
         {
             get { return _ImageUrlLocator(this).Value; }
@@ -66,6 +70,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image Url
+        [DataMember]
         public string EditorUrl
         {
             get { return _EditorUrlLocator(this).Value; }
@@ -78,6 +83,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image
+        [DataMember]
         public string EditorName
         {
             get { return _EditorNameLocator(this).Value; }
@@ -96,6 +102,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Public Time
+        [DataMember]
         public string PublicTime
         {
             get { return _PublicTimeLocator(this).Value; }

@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace YeeYanUWP.Models
 {
-    //[DataContract(IsReference=true) ] //if you want
+    [KnownType(typeof(ObservableCollection<Catalog>))]
+    [DataContract(IsReference = true)] //if you want
     public class Channel : BindableBase<Channel>
     {
         //Use propvm + tab +tab  to create a new property of bindable here:
@@ -23,11 +25,11 @@ namespace YeeYanUWP.Models
                 Catalogs.Add(new Catalog() { Title = "分类1 文章2" });
                 Catalogs.Add(new Catalog() { Title = "分类1 文章4" });
                 Catalogs.Add(new Catalog() { Title = "分类1 文章3" });
-
             }
         }
 
         //channel name
+        [DataMember]
         public string Name
         {
             get { return _NameLocator(this).Value; }
@@ -40,6 +42,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //channel icon
+        [DataMember]
         public string Icon
         {
             get { return _IconLocator(this).Value; }
@@ -53,6 +56,7 @@ namespace YeeYanUWP.Models
 
 
         //channel url
+        [DataMember]
         public string  Url
         {
             get { return _UrlLocator(this).Value; }
@@ -64,7 +68,7 @@ namespace YeeYanUWP.Models
         static Func<string > _UrlDefaultValueFactory = () => { return default(string ); };
         #endregion
 
-
+        [DataMember]
         public ObservableCollection<Catalog> Catalogs
         {
             get { return _CatalogsLocator(this).Value; }

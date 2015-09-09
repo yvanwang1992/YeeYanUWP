@@ -13,11 +13,15 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using YeeYanUWP.Models;
+using DataHelperLib.Helpers;
+using HtmlAgilityPack;
+using System.Diagnostics;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Popups;
+using MVVMSidekick.Utilities;
 
 namespace YeeYanUWP.ViewModels
 {
-
-    [DataContract]
     public class MainPage_Model : ViewModelBase<MainPage_Model>
     {
         // If you have install the code sniplets, use "propvm + [tab] +[tab]" create a property propcmd for command
@@ -31,12 +35,11 @@ namespace YeeYanUWP.ViewModels
                 Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
                 Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
                 Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
-
             }
-            Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
-            Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
-            Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
 
+            //Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
+            //Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
+            //Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
         }
 
         //propvm tab tab string tab Title
@@ -57,6 +60,7 @@ namespace YeeYanUWP.ViewModels
         {
             get { return _ChannelsLocator(this).Value; }
             set { _ChannelsLocator(this).SetValueAndTryNotify(value); }
+           
         }
         #region Property ObservableCollection<Channel> Channels Setup        
         protected Property<ObservableCollection<Channel>> _Channels = new Property<ObservableCollection<Channel>> { LocatorFunc = _ChannelsLocator };
@@ -65,6 +69,7 @@ namespace YeeYanUWP.ViewModels
         #endregion
 
         //Current Channel
+        [DataMember]
         public Channel CurrentChannel
         {
             get { return _CurrentChannelLocator(this).Value; }
@@ -158,69 +163,118 @@ namespace YeeYanUWP.ViewModels
             };
         #endregion
 
-
         #endregion
 
+
+        private void GetChannelsViewModel()
+        {
+            HttpRequest request = new HttpRequest() { _url = "http://article.yeeyan.org/", _requestType = RequestType.Get };
+
+            request.OnSuccess += async (result, statusCode) =>
+            {
+                //DealWith HTML
+                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(result);
+                var list = doc.DocumentNode.SelectNodes("//div[@class='list-group']");
+                //list[0] is channel
+                //list[1] is tag        
+                var channelNode = list[0];
+                var tagNode = list[1];
+
+                //频道
+                foreach (HtmlNode channel in channelNode.SelectNodes("a"))
+                {
+                    string href = channel.GetAttributeValue("href", "");
+                    string title = channel.InnerText.Trim();
+                    Debug.WriteLine(title + "-------------" + href);
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        Channels.Add(new Channel() { Name = title, Url = href, Icon = "Icon1" });
+                    });
+                }
+                ////标签
+                //foreach (HtmlNode tag in tagNode.SelectNodes("a"))
+                //{
+                //    string href = tag.GetAttributeValue("href", "");
+                //    string title = tag.InnerText;
+                //    Debug.WriteLine(title + "-------------" + href);
+                //}
+            };
+            request.Run();
+        }
 
         #region Life Time Event Handling
 
-        ///// <summary>
-        ///// This will be invoked by view when this viewmodel instance is set to view's ViewModel property. 
-        ///// </summary>
-        ///// <param name="view">Set target</param>
-        ///// <param name="oldValue">Value before set.</param>
-        ///// <returns>Task awaiter</returns>
-        //protected override Task OnBindedToView(MVVMSidekick.Views.IView view, IViewModel oldValue)
-        //{
-        //    return base.OnBindedToView(view, oldValue);
-        //}
+        /// <summary>
+        /// This will be invoked by view when this viewmodel instance is set to view's ViewModel property. 
+        /// </summary>
+        /// <param name="view">Set target</param>
+        /// <param name="oldValue">Value before set.</param>
+        /// <returns>Task awaiter</returns>
+        protected override Task OnBindedToView(MVVMSidekick.Views.IView view, IViewModel oldValue)
+        {
+            return base.OnBindedToView(view, oldValue);
+        }
 
-        ///// <summary>
-        ///// This will be invoked by view when this instance of viewmodel in ViewModel property is overwritten.
-        ///// </summary>
-        ///// <param name="view">Overwrite target view.</param>
-        ///// <param name="newValue">The value replacing </param>
-        ///// <returns>Task awaiter</returns>
-        //protected override Task OnUnbindedFromView(MVVMSidekick.Views.IView view, IViewModel newValue)
-        //{
-        //    return base.OnUnbindedFromView(view, newValue);
-        //}
+        /// <summary>
+        /// This will be invoked by view when this instance of viewmodel in ViewModel property is overwritten.
+        /// </summary>
+        /// <param name="view">Overwrite target view.</param>
+        /// <param name="newValue">The value replacing </param>
+        /// <returns>Task awaiter</returns>
+        protected override Task OnUnbindedFromView(MVVMSidekick.Views.IView view, IViewModel newValue)
+        {
+            return base.OnUnbindedFromView(view, newValue);
+        }
 
-        ///// <summary>
-        ///// This will be invoked by view when the view fires Load event and this viewmodel instance is already in view's ViewModel property
-        ///// </summary>
-        ///// <param name="view">View that firing Load event</param>
-        ///// <returns>Task awaiter</returns>
-        //protected override Task OnBindedViewLoad(MVVMSidekick.Views.IView view)
-        //{
-        //    return base.OnBindedViewLoad(view);
-        //}
+        /// <summary>
+        /// This will be invoked by view when the view fires Load event and this viewmodel instance is already in view's ViewModel property
+        /// </summary>
+        /// <param name="view">View that firing Load event</param>
+        /// <returns>Task awaiter</returns>
+        protected override Task OnBindedViewLoad(MVVMSidekick.Views.IView view)
+        {
+            //Restore Channels from key ChannelsKey;
+            var channels = StorageHelper.GetValueWithKey(Constant.ChannelsKey);
+            if (channels != null)
+            {
+                this.Channels = (ObservableCollection<Channel>)channels;
+            }
+            else
+            {
+                GetChannelsViewModel();
+            }
+            
+            return base.OnBindedViewLoad(view);
+        }
+        
+        /// <summary>
+        /// This will be invoked by view when the view fires Unload event and this viewmodel instance is still in view's  ViewModel property
+        /// </summary>
+        /// <param name="view">View that firing Unload event</param>
+        /// <returns>Task awaiter</returns>
+        protected override Task OnBindedViewUnload(MVVMSidekick.Views.IView view)
+        {
+            //Save Channels 
+            StorageHelper.SetValueWithKey(Constant.ChannelsKey, Channels);
 
-        ///// <summary>
-        ///// This will be invoked by view when the view fires Unload event and this viewmodel instance is still in view's  ViewModel property
-        ///// </summary>
-        ///// <param name="view">View that firing Unload event</param>
-        ///// <returns>Task awaiter</returns>
-        //protected override Task OnBindedViewUnload(MVVMSidekick.Views.IView view)
-        //{
-        //    return base.OnBindedViewUnload(view);
-        //}
+            return base.OnBindedViewUnload(view);
+        }
 
-        ///// <summary>
-        ///// <para>If dispose actions got exceptions, will handled here. </para>
-        ///// </summary>
-        ///// <param name="exceptions">
-        ///// <para>The exception and dispose infomation</para>
-        ///// </param>
-        //protected override async void OnDisposeExceptions(IList<DisposeInfo> exceptions)
-        //{
-        //    base.OnDisposeExceptions(exceptions);
-        //    await TaskExHelper.Yield();
-        //}
-
+        /// <summary>
+        /// <para>If dispose actions got exceptions, will handled here. </para>
+        /// </summary>
+        /// <param name="disposeInfoWithExceptions">
+        /// <para>The exception and dispose infomation</para>
+        /// </param>        
+        protected override async void OnDisposeExceptions(IList<DisposeEntry> disposeInfoWithExceptions)
+        {
+            base.OnDisposeExceptions(disposeInfoWithExceptions);
+            await TaskExHelper.Yield();
+        }
         #endregion
 
-
+       
     }
 
 }

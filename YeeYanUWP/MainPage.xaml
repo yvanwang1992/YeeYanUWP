@@ -74,4 +74,23 @@
             </SplitView.Content>
         </SplitView>
     </Grid>
+
+    <Page.DataContext>
+        <Binding  RelativeSource="{RelativeSource Mode=Self}" Path="ViewModel"/>
+    </Page.DataContext>
+    <mvvm:MVVMPage.ViewModel>
+        <Binding Source="{StaticResource DesignVM}" />
+    </mvvm:MVVMPage.ViewModel>
+    <mvvm:MVVMPage.BottomAppBar>
+        <CommandBar d:DataContext="{StaticResource DesignVM}">
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Message" />
+            </CommandBar.SecondaryCommands>
+            <CommandBar.PrimaryCommands>
+                <AppBarButton Icon="ReShare" Label="下载" Click="Download_Click"/>
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
+        <!--<AppBar ><TextBlock TextWrapping="Wrap" Text="{Binding BindableInstanceId, Mode=OneWay}"/></AppBar>-->
+    </mvvm:MVVMPage.BottomAppBar>
+
 </mvvm:MVVMPage>

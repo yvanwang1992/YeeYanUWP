@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace DataHelper.Helpers
+namespace DataHelperLib.Helpers
 {
     public sealed class StorageHelper
     {
@@ -26,7 +29,7 @@ namespace DataHelper.Helpers
             }
             else
             {
-                LocalStorageSettiings.Values.Add(key, value);
+                LocalStorageSettiings.Values.Add(key, JsonSerializer(value));
             }
         }
 
@@ -63,5 +66,22 @@ namespace DataHelper.Helpers
         //        }
         //    }
         //}
+
+        //JSON序列化
+        public static string JsonSerializer(object obj)
+        {
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(object));
+            string result = string.Empty;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                serializer.WriteObject(ms, obj);
+                ms.Position = 0;
+                using (StreamReader reader = new StreamReader(ms))
+                {
+                    result = reader.ReadToEnd();
+                }
+            }
+            return result;
+        }
     }
 }

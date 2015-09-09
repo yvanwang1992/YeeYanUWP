@@ -152,6 +152,12 @@
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataHelperLib\DataHelperLib.csproj">
+      <Project>{ad0d45c8-75cb-4b3e-8bb5-d6d72b0b544e}</Project>
+      <Name>DataHelperLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
