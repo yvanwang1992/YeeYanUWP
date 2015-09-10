@@ -8,24 +8,21 @@ using System.Threading.Tasks;
 
 namespace YeeYanUWP.Models
 {
-
-    [DataContract(IsReference = true)] //if you want
+    [DataContract()] //if you want
     public class Catalog : BindableBase<Catalog>
     {
-        //public Catalog()
-        //{
-        //    // Use propery to init value here:
-        //    if (IsInDesignMode)
-        //    {
-        //        //Add design time demo data init here. These will not execute in runtime.
-        //    }
-
-        //}
+        public Catalog()
+        {
+            // Use propery to init value here:
+            if (IsInDesignMode)
+            {
+                //Add design time demo data init here. These will not execute in runtime.
+            }
+        }
 
         //Use propvm + tab +tab  to create a new property of bindable here:
 
         //title
-        [DataMember]
         public string Title
         {
             get { return _TitleLocator(this).Value; }
@@ -34,17 +31,11 @@ namespace YeeYanUWP.Models
         #region Property string Title Setup        
         protected Property<string> _Title = new Property<string> { LocatorFunc = _TitleLocator };
         static Func<BindableBase, ValueContainer<string>> _TitleLocator = RegisterContainerLocator<string>("Title", model => model.Initialize("Title", ref model._Title, ref _TitleLocator, _TitleDefaultValueFactory));
-        static Func<BindableBase, string> _TitleDefaultValueFactory =
-            model =>
-            {
-                var vm = CastToCurrentType(model);
-                //TODO: Add the logic that produce default value from vm current status.
-                return default(string);
-            };
+        static Func<string> _TitleDefaultValueFactory = () => { return default(string); };
         #endregion
 
+
         //Brief Content
-        [DataMember]
         public string BriefContent
         {
             get { return _BriefContentLocator(this).Value; }
@@ -57,7 +48,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Image Url
-        [DataMember]
         public string ImageUrl
         {
             get { return _ImageUrlLocator(this).Value; }
@@ -70,7 +60,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image Url
-        [DataMember]
         public string EditorUrl
         {
             get { return _EditorUrlLocator(this).Value; }
@@ -83,7 +72,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image
-        [DataMember]
         public string EditorName
         {
             get { return _EditorNameLocator(this).Value; }
@@ -92,17 +80,10 @@ namespace YeeYanUWP.Models
         #region Property string EditorName Setup        
         protected Property<string> _EditorName = new Property<string> { LocatorFunc = _EditorNameLocator };
         static Func<BindableBase, ValueContainer<string>> _EditorNameLocator = RegisterContainerLocator<string>("EditorName", model => model.Initialize("EditorName", ref model._EditorName, ref _EditorNameLocator, _EditorNameDefaultValueFactory));
-        static Func<BindableBase, string> _EditorNameDefaultValueFactory =
-            model =>
-            {
-                var vm = CastToCurrentType(model);
-                //TODO: Add the logic that produce default value from vm current status.
-                return default(string);
-            };
+        static Func<string> _EditorNameDefaultValueFactory = () => { return default(string); };
         #endregion
 
         //Public Time
-        [DataMember]
         public string PublicTime
         {
             get { return _PublicTimeLocator(this).Value; }
@@ -111,13 +92,7 @@ namespace YeeYanUWP.Models
         #region Property string PublicTime Setup        
         protected Property<string> _PublicTime = new Property<string> { LocatorFunc = _PublicTimeLocator };
         static Func<BindableBase, ValueContainer<string>> _PublicTimeLocator = RegisterContainerLocator<string>("PublicTime", model => model.Initialize("PublicTime", ref model._PublicTime, ref _PublicTimeLocator, _PublicTimeDefaultValueFactory));
-        static Func<BindableBase, string> _PublicTimeDefaultValueFactory =
-            model =>
-            {
-                var vm = CastToCurrentType(model);
-                //TODO: Add the logic that produce default value from vm current status.
-                return default(string);
-            };
+        static Func<string> _PublicTimeDefaultValueFactory = () => { return default(string); };
         #endregion
 
     }

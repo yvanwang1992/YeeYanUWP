@@ -14,5 +14,7 @@ namespace DataHelperLib.Helpers
 
         //For Save Key/Value
         public static readonly string ChannelsKey = "ChannelsKey";
+
+        public static readonly string ARTICLEURL = "http://article.yeeyan.org";
     }
 }

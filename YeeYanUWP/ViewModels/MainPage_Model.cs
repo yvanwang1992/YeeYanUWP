@@ -19,9 +19,11 @@ using System.Diagnostics;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Popups;
 using MVVMSidekick.Utilities;
+using MVVMSidekick.Common;
 
 namespace YeeYanUWP.ViewModels
 {
+    [DataContract]
     public class MainPage_Model : ViewModelBase<MainPage_Model>
     {
         // If you have install the code sniplets, use "propvm + [tab] +[tab]" create a property propcmd for command
@@ -29,7 +31,7 @@ namespace YeeYanUWP.ViewModels
 
         public MainPage_Model()
         {
-            if (IsInDesignMode )
+            if (IsInDesignMode)
             {
                 Title = "Title is a little different in Design mode";
                 Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
@@ -54,13 +56,11 @@ namespace YeeYanUWP.ViewModels
         static Func<String> _TitleDefaultValueFactory = ()=>"Title is Here";
         #endregion
 
-
         //Channels for the listview in spitview.pane
         public ObservableCollection<Channel> Channels
         {
             get { return _ChannelsLocator(this).Value; }
             set { _ChannelsLocator(this).SetValueAndTryNotify(value); }
-           
         }
         #region Property ObservableCollection<Channel> Channels Setup        
         protected Property<ObservableCollection<Channel>> _Channels = new Property<ObservableCollection<Channel>> { LocatorFunc = _ChannelsLocator };
@@ -69,7 +69,6 @@ namespace YeeYanUWP.ViewModels
         #endregion
 
         //Current Channel
-        [DataMember]
         public Channel CurrentChannel
         {
             get { return _CurrentChannelLocator(this).Value; }
@@ -107,7 +106,9 @@ namespace YeeYanUWP.ViewModels
                             var seletedItem = e.EventArgs.Parameter as Channel;
                             if (seletedItem != null)
                             {
-                                vm.CurrentChannel = seletedItem;
+                                vm.DealWithCatalogs(seletedItem);
+                                //vm.CurrentChannel = seletedItem.Url;
+                                //vm.CurrentChannel = seletedItem;
                             }
                             //Todo: Add LvPaneSelecteionChanged logic here, or
                             //await MVVMSidekick.Utilities.TaskExHelper.Yield();
@@ -148,7 +149,7 @@ namespace YeeYanUWP.ViewModels
                             var selectedItem = e.EventArgs.Parameter as Catalog;
                             if (selectedItem != null)
                             {
-                                await vm.StageManager.DefaultStage.ShowAndGetViewModel(new DetailPage_Model(selectedItem));        
+                                await vm.StageManager.DefaultStage.Show(new DetailPage_Model(selectedItem));        
                             }
                             //await MVVMSidekick.Utilities.TaskExHelper.Yield();
                         }
@@ -166,18 +167,54 @@ namespace YeeYanUWP.ViewModels
         #endregion
 
 
+
+        public CommandModel<ReactiveCommand, String> CommandNavigateToAbout
+        {
+            get { return _CommandNavigateToAboutLocator(this).Value; }
+            set { _CommandNavigateToAboutLocator(this).SetValueAndTryNotify(value); }
+        }
+        #region Property CommandModel<ReactiveCommand, String> CommandNavigateToAbout Setup        
+        protected Property<CommandModel<ReactiveCommand, String>> _CommandNavigateToAbout = new Property<CommandModel<ReactiveCommand, String>> { LocatorFunc = _CommandNavigateToAboutLocator };
+        static Func<BindableBase, ValueContainer<CommandModel<ReactiveCommand, String>>> _CommandNavigateToAboutLocator = RegisterContainerLocator<CommandModel<ReactiveCommand, String>>("CommandNavigateToAbout", model => model.Initialize("CommandNavigateToAbout", ref model._CommandNavigateToAbout, ref _CommandNavigateToAboutLocator, _CommandNavigateToAboutDefaultValueFactory));
+        static Func<BindableBase, CommandModel<ReactiveCommand, String>> _CommandNavigateToAboutDefaultValueFactory =
+            model =>
+            {
+                var resource = "NavigateToAbout";           // Command resource  
+                var commandId = "NavigateToAbout";
+                var vm = CastToCurrentType(model);
+                var cmd = new ReactiveCommand(canExecute: true) { ViewModel = model }; //New Command Core
+                cmd
+                    .DoExecuteUIBusyTask(
+                        vm,
+                        async e =>
+                        {
+                            await vm.StageManager.DefaultStage.Show(new DetailPage_Model());
+                            //Todo: Add NavigateToAbout logic here, or
+                            //await MVVMSidekick.Utilities.TaskExHelper.Yield();
+                        }
+                    )
+                    .DoNotifyDefaultEventRouter(vm, commandId)
+                    .Subscribe()
+                    .DisposeWith(vm);
+
+                var cmdmdl = cmd.CreateCommandModel(resource);
+                cmdmdl.ListenToIsUIBusy(model: vm, canExecuteWhenBusy: false);
+                return cmdmdl;
+            };
+        #endregion
+
+
         private void GetChannelsViewModel()
         {
-            HttpRequest request = new HttpRequest() { _url = "http://article.yeeyan.org/", _requestType = RequestType.Get };
+            HttpRequest request = new HttpRequest() { _url = Constant.ARTICLEURL, _requestType = RequestType.Get };
 
             request.OnSuccess += async (result, statusCode) =>
             {
                 //DealWith HTML
-                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(result);
                 var list = doc.DocumentNode.SelectNodes("//div[@class='list-group']");
-                //list[0] is channel
-                //list[1] is tag        
+                //list[0] is channel    //list[1] is tag        
                 var channelNode = list[0];
                 var tagNode = list[1];
 
@@ -186,10 +223,9 @@ namespace YeeYanUWP.ViewModels
                 {
                     string href = channel.GetAttributeValue("href", "");
                     string title = channel.InnerText.Trim();
-                    Debug.WriteLine(title + "-------------" + href);
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
-                        Channels.Add(new Channel() { Name = title, Url = href, Icon = "Icon1" });
+                        Channels.Add(new Channel() { Name = title, Url = Constant.ARTICLEURL + href, Icon = "Icon1" });
                     });
                 }
                 ////标签
@@ -202,6 +238,62 @@ namespace YeeYanUWP.ViewModels
             };
             request.Run();
         }
+
+        private void DealWithCatalogs(Channel selectedChannel)
+        {
+            var channel = Channels.Where(n => n.Name == selectedChannel.Name).First();
+
+            HttpRequest http = new HttpRequest() { _url = selectedChannel.Url, _requestType = RequestType.Get };
+            http.OnSuccess += async (result, statusCode) =>
+            {
+                HtmlDocument doc = new HtmlDocument() { };
+                doc.LoadHtml(result);
+                var list = doc.DocumentNode.SelectNodes("//div[@class='tf tf-atc']");
+                foreach (var node in list)  //for each tf tf-atc div
+                {   
+                    //string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
+                    //imgUrl = imgUrl.Split('(', ')')[1];
+                    //string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
+                    //string title = node.SelectSingleNode("//div[@class='u-w-l']").InnerText;
+                    //string briefContent = node.SelectSingleNode("//div[@class='abst-ctnt']").InnerText;
+                    //string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
+                    //string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
+                    //string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
+
+
+
+                    string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
+                    imgUrl = imgUrl.Split('(', ')')[1];
+                    string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
+                    string title = node.SelectSingleNode("//div[@class='u-w-l']").InnerText;
+                    string briefContent = node.SelectSingleNode("//div[@class='abst-ctnt']").InnerText;
+                    string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
+                    string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
+                    string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
+
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        var catalog = new Catalog();
+                        catalog.Title = title;
+                        catalog.ImageUrl = imgUrl;
+                        catalog.BriefContent = briefContent;
+                        catalog.EditorName = editorName;
+                        catalog.EditorUrl = editorUrl;
+                        catalog.PublicTime = publicTime;
+                        if (null == channel.Catalogs.Where(c => c.Title == catalog.Title).FirstOrDefault())
+                        {
+                            channel.Catalogs.Add(catalog);
+                        }
+                    });
+                }
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    CurrentChannel = channel;
+                });
+            };
+            http.Run();
+        }
+
 
         #region Life Time Event Handling
 
@@ -244,7 +336,7 @@ namespace YeeYanUWP.ViewModels
             {
                 GetChannelsViewModel();
             }
-            
+
             return base.OnBindedViewLoad(view);
         }
         
@@ -267,14 +359,13 @@ namespace YeeYanUWP.ViewModels
         /// <param name="disposeInfoWithExceptions">
         /// <para>The exception and dispose infomation</para>
         /// </param>        
-        protected override async void OnDisposeExceptions(IList<DisposeEntry> disposeInfoWithExceptions)
+        /// 
+        protected async override void OnDisposeExceptions(IList<DisposeEntry> disposeInfoWithExceptions)
         {
             base.OnDisposeExceptions(disposeInfoWithExceptions);
             await TaskExHelper.Yield();
         }
         #endregion
-
-       
     }
 
 }

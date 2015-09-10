@@ -13,13 +13,13 @@ namespace DataHelperLib.Helpers
     public sealed class StorageHelper
     {
         //and we can user Roaming;
-        
+
         //Local Operate to Folder or File      
         static StorageFolder LocalStorageFolder = ApplicationData.Current.LocalFolder;
-
+        
         //Local Setting for Save or Get Setting Value
         static ApplicationDataContainer LocalStorageSettiings = ApplicationData.Current.LocalSettings;
-        
+
         //Set Settings with key/value to Settings
         public static void SetValueWithKey(string key, object value)
         {
@@ -70,7 +70,7 @@ namespace DataHelperLib.Helpers
         //JSON序列化
         public static string JsonSerializer(object obj)
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(object));
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
             string result = string.Empty;
             using (MemoryStream ms = new MemoryStream())
             {

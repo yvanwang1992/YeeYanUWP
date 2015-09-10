@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace YeeYanUWP.Models
 {
-
-    [DataContract(IsReference = true)] //if you want
+    [DataContract()] //if you want
     public class Article : BindableBase<Article>
     {
         public Article()
@@ -19,14 +18,11 @@ namespace YeeYanUWP.Models
             {
                 //Add design time demo data init here. These will not execute in runtime.
             }
-
-
         }
 
         //Use propvm + tab +tab  to create a new property of bindable here:
 
         //Title
-        [DataMember]
         public string Title
         {
             get { return _TitleLocator(this).Value; }
@@ -39,7 +35,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //SubTitle
-        [DataMember]
         public string SubTitle
         {
             get { return _SubTitleLocator(this).Value; }
@@ -52,7 +47,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor
-        [DataMember]
         public string Editor
         {
             get { return _EditorLocator(this).Value; }
@@ -65,7 +59,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Author
-        [DataMember]
         public string Author
         {
             get { return _AuthorLocator(this).Value; }
@@ -78,7 +71,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //public Date
-        [DataMember]
         public string PublicDate
         {
             get { return _PublicDateLocator(this).Value; }
@@ -91,7 +83,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //View 浏览量
-        [DataMember]
         public string View
         {
             get { return _ViewLocator(this).Value; }
@@ -104,7 +95,6 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Conetnt
-        [DataMember]
         public string Content
         {
             get { return _ContentLocator(this).Value; }

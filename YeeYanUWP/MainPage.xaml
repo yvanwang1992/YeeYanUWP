@@ -84,7 +84,7 @@
     <mvvm:MVVMPage.BottomAppBar>
         <CommandBar d:DataContext="{StaticResource DesignVM}">
             <CommandBar.SecondaryCommands>
-                <AppBarButton Icon="Message" />
+                <AppBarButton Icon="Account" Command="{Binding CommandNavigateToAbout}"/>
             </CommandBar.SecondaryCommands>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="ReShare" Label="下载" Click="Download_Click"/>
