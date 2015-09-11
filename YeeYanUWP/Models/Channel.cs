@@ -28,6 +28,7 @@ namespace YeeYanUWP.Models
         }
 
         //channel name
+        [DataMember]
         public string Name
         {
             get { return _NameLocator(this).Value; }
@@ -40,6 +41,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //channel icon
+        [DataMember]
         public string Icon
         {
             get { return _IconLocator(this).Value; }
@@ -52,6 +54,7 @@ namespace YeeYanUWP.Models
         #endregion
         
         //channel url
+        [DataMember]
         public string  Url
         {
             get { return _UrlLocator(this).Value; }
@@ -63,6 +66,7 @@ namespace YeeYanUWP.Models
         static Func<string > _UrlDefaultValueFactory = () => { return default(string); };
         #endregion
 
+        [DataMember]
         public ObservableCollection<Catalog> Catalogs
         {
             get { return _CatalogsLocator(this).Value; }

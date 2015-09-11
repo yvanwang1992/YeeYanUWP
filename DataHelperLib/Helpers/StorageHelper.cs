@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Windows.Storage;
 
 namespace DataHelperLib.Helpers
@@ -29,7 +30,7 @@ namespace DataHelperLib.Helpers
             }
             else
             {
-                LocalStorageSettiings.Values.Add(key, JsonSerializer(value));
+                LocalStorageSettiings.Values.Add(key, Serialize(value));
             }
         }
 
@@ -68,6 +69,7 @@ namespace DataHelperLib.Helpers
         //}
 
         //JSON序列化
+
         public static string JsonSerializer(object obj)
         {
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
@@ -83,5 +85,38 @@ namespace DataHelperLib.Helpers
             }
             return result;
         }
+
+        //XML反序列化        
+        public static T Deserlialize<T>(string xml)
+        {
+            T result = default(T);  //获取泛型 一个类型的默认值
+            if (!string.IsNullOrWhiteSpace(xml))
+            {
+                var ser = new XmlSerializer(typeof(T));
+                using (var reader = new StringReader(xml))
+                {
+                    result = (T)ser.Deserialize(reader);
+                }
+            }
+            return result;
+        }
+
+        //XML序列化
+        public static string Serialize(object obj)
+        {
+            var result = string.Empty;
+            if (obj != null)
+            {
+                var ser = new XmlSerializer(obj.GetType());
+                using (var writer = new StringWriter())
+                {
+                    ser.Serialize(writer, obj);
+                    writer.Flush();//清理缓存区
+                    result = writer.GetStringBuilder().ToString();
+                }
+            }
+            return result;
+        }
+
     }
 }

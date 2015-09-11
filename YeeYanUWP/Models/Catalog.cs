@@ -23,6 +23,7 @@ namespace YeeYanUWP.Models
         //Use propvm + tab +tab  to create a new property of bindable here:
 
         //title
+        [DataMember]
         public string Title
         {
             get { return _TitleLocator(this).Value; }
@@ -36,6 +37,7 @@ namespace YeeYanUWP.Models
 
 
         //Brief Content
+        [DataMember]
         public string BriefContent
         {
             get { return _BriefContentLocator(this).Value; }
@@ -48,6 +50,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Image Url
+        [DataMember]
         public string ImageUrl
         {
             get { return _ImageUrlLocator(this).Value; }
@@ -60,6 +63,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image Url
+        [DataMember]
         public string EditorUrl
         {
             get { return _EditorUrlLocator(this).Value; }
@@ -72,6 +76,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Editor Image
+        [DataMember]
         public string EditorName
         {
             get { return _EditorNameLocator(this).Value; }
@@ -84,6 +89,7 @@ namespace YeeYanUWP.Models
         #endregion
 
         //Public Time
+        [DataMember]
         public string PublicTime
         {
             get { return _PublicTimeLocator(this).Value; }

@@ -250,7 +250,7 @@ namespace YeeYanUWP.ViewModels
                 doc.LoadHtml(result);
                 var list = doc.DocumentNode.SelectNodes("//div[@class='tf tf-atc']");
                 foreach (var node in list)  //for each tf tf-atc div
-                {   
+                {
                     //string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
                     //imgUrl = imgUrl.Split('(', ')')[1];
                     //string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
@@ -259,8 +259,6 @@ namespace YeeYanUWP.ViewModels
                     //string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
                     //string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
                     //string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
-
-
 
                     string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
                     imgUrl = imgUrl.Split('(', ')')[1];
@@ -280,7 +278,8 @@ namespace YeeYanUWP.ViewModels
                         catalog.EditorName = editorName;
                         catalog.EditorUrl = editorUrl;
                         catalog.PublicTime = publicTime;
-                        if (null == channel.Catalogs.Where(c => c.Title == catalog.Title).FirstOrDefault())
+                        //if (null == channel.Catalogs.Where(c => c.Title == catalog.Title).FirstOrDefault())
+                        if(!channel.Catalogs.Contains(catalog))
                         {
                             channel.Catalogs.Add(catalog);
                         }
@@ -327,9 +326,10 @@ namespace YeeYanUWP.ViewModels
         protected override Task OnBindedViewLoad(MVVMSidekick.Views.IView view)
         {
             //Restore Channels from key ChannelsKey;
-            var channels = StorageHelper.GetValueWithKey(Constant.ChannelsKey);
-            if (channels != null)
+            var result = StorageHelper.GetValueWithKey(Constant.ChannelsKey);
+            if (result != null)
             {
+                var channels = StorageHelper.Deserlialize<ObservableCollection<Channel>>(result.ToString());
                 this.Channels = (ObservableCollection<Channel>)channels;
             }
             else
