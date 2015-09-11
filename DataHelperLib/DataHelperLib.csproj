@@ -113,6 +113,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\CommonHelper.cs" />
     <Compile Include="Helpers\Constant.cs" />
     <Compile Include="Helpers\HtmlPraseHelper.cs" />
     <Compile Include="Helpers\HttpRequest.cs" />

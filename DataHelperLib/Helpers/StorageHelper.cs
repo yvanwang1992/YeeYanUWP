@@ -21,6 +21,8 @@ namespace DataHelperLib.Helpers
         //Local Setting for Save or Get Setting Value
         static ApplicationDataContainer LocalStorageSettiings = ApplicationData.Current.LocalSettings;
 
+        #region ------ Some Static Method About LocalSetting for Read Value form Key / Set Value With Key -----
+        
         //Set Settings with key/value to Settings
         public static void SetValueWithKey(string key, object value)
         {
@@ -30,7 +32,7 @@ namespace DataHelperLib.Helpers
             }
             else
             {
-                LocalStorageSettiings.Values.Add(key, Serialize(value));
+                LocalStorageSettiings.Values.Add(key, value);
             }
         }
 
@@ -48,6 +50,35 @@ namespace DataHelperLib.Helpers
             else
                 return null;
         }
+
+        #endregion
+
+        #region -------------序列化ViewModel等进行保存 
+
+        #endregion
+
+        public static async void SaveViewModel(string viewModelName, object value)
+        {
+            StorageFile file = await LocalStorageFolder.CreateFileAsync(viewModelName,
+                CreationCollisionOption.OpenIfExists);
+            await FileIO.WriteTextAsync(file, CommonHelper.XmlSerializer(value));
+        }
+
+        public static async Task<T> GetViewModel<T>(string viewmodelName)
+        {
+            try
+            {
+                StorageFile file = await LocalStorageFolder.GetFileAsync(viewmodelName);
+                String result = await FileIO.ReadTextAsync(file);
+                return CommonHelper.XmlDeserializer<T>(result);
+            }
+            catch (FileNotFoundException e)
+            {
+                return default(T);
+            }
+        }
+
+
 
         //public static async IEnumerable<StorageFile> GetAllFiles()
         //{ 
@@ -67,56 +98,6 @@ namespace DataHelperLib.Helpers
         //        }
         //    }
         //}
-
-        //JSON序列化
-
-        public static string JsonSerializer(object obj)
-        {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(obj.GetType());
-            string result = string.Empty;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                serializer.WriteObject(ms, obj);
-                ms.Position = 0;
-                using (StreamReader reader = new StreamReader(ms))
-                {
-                    result = reader.ReadToEnd();
-                }
-            }
-            return result;
-        }
-
-        //XML反序列化        
-        public static T Deserlialize<T>(string xml)
-        {
-            T result = default(T);  //获取泛型 一个类型的默认值
-            if (!string.IsNullOrWhiteSpace(xml))
-            {
-                var ser = new XmlSerializer(typeof(T));
-                using (var reader = new StringReader(xml))
-                {
-                    result = (T)ser.Deserialize(reader);
-                }
-            }
-            return result;
-        }
-
-        //XML序列化
-        public static string Serialize(object obj)
-        {
-            var result = string.Empty;
-            if (obj != null)
-            {
-                var ser = new XmlSerializer(obj.GetType());
-                using (var writer = new StringWriter())
-                {
-                    ser.Serialize(writer, obj);
-                    writer.Flush();//清理缓存区
-                    result = writer.GetStringBuilder().ToString();
-                }
-            }
-            return result;
-        }
 
     }
 }

@@ -38,7 +38,7 @@ namespace YeeYanUWP.ViewModels
                 Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
                 Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
             }
-
+            
             //Channels.Add(new Channel() { Name = "Name1", Url = "Url1", Icon = "Icon1" });
             //Channels.Add(new Channel() { Name = "Name2", Url = "Url2", Icon = "Icon2" });
             //Channels.Add(new Channel() { Name = "Name3", Url = "Url3", Icon = "Icon3" });
@@ -246,43 +246,59 @@ namespace YeeYanUWP.ViewModels
             HttpRequest http = new HttpRequest() { _url = selectedChannel.Url, _requestType = RequestType.Get };
             http.OnSuccess += async (result, statusCode) =>
             {
-                HtmlDocument doc = new HtmlDocument() { };
+                //HtmlDocument doc = new HtmlDocument() { };
+                //doc.LoadHtml(result);
+                //var list = doc.DocumentNode.SelectNodes("//div[@class='tf tf-atc']");
+                //foreach (var node in list)  //for each tf tf-atc div
+                //{
+                //    string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
+                //    imgUrl = imgUrl.Split('(', ')')[1];
+                //    string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
+                //    string title = node.SelectNodes("//div[@class='u-w-l']").FirstOrDefault().InnerText;
+                //    string briefContent = node.SelectSingleNode("//div[@class='abst-ctnt']").InnerText;
+                //    string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
+                //    string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
+                //    string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
+
+                //    //await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                //    //{
+                //    var catalog = new Catalog();
+                //    catalog.Title = title;
+                //    catalog.ImageUrl = imgUrl;
+                //    catalog.BriefContent = briefContent;
+                //    catalog.EditorName = editorName;
+                //    catalog.EditorUrl = editorUrl;
+                //    catalog.PublicTime = publicTime;
+                //    //if (null == channel.Catalogs.Where(c => c.Title == catalog.Title).FirstOrDefault())
+                //    //{
+                //        channel.Catalogs.Add(catalog);
+                //    //}
+                //    //});
+                //}
+                //await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                //{
+                //    CurrentChannel = channel;
+                //});
+                ////////////////////////////////////////////////////////
+                ///////////////////////////////////////////////////////
+                //////////////////////////////////////////////////////
+                HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(result);
-                var list = doc.DocumentNode.SelectNodes("//div[@class='tf tf-atc']");
-                foreach (var node in list)  //for each tf tf-atc div
+                var list = doc.DocumentNode.SelectNodes("//div[@class='list-group']");
+                //list[0] is channel    //list[1] is tag        
+                var channelNode = list[0];
+                var tagNode = list[1];
+
+                //频道
+                foreach (HtmlNode channel1 in channelNode.SelectNodes("a"))
                 {
-                    //string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
-                    //imgUrl = imgUrl.Split('(', ')')[1];
-                    //string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
-                    //string title = node.SelectSingleNode("//div[@class='u-w-l']").InnerText;
-                    //string briefContent = node.SelectSingleNode("//div[@class='abst-ctnt']").InnerText;
-                    //string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
-                    //string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
-                    //string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
-
-                    string imgUrl = node.SelectSingleNode("//div[@class='atc-lg']").GetAttributeValue("style", "");
-                    imgUrl = imgUrl.Split('(', ')')[1];
-                    string url = node.SelectSingleNode("//div[@class='w-l']").ChildNodes["a"].GetAttributeValue("href", "");
-                    string title = node.SelectSingleNode("//div[@class='u-w-l']").InnerText;
-                    string briefContent = node.SelectSingleNode("//div[@class='abst-ctnt']").InnerText;
-                    string editorUrl = node.SelectSingleNode("//a[@class='athr-n']").GetAttributeValue("href", "");
-                    string editorName = node.SelectSingleNode("//a[@class='athr-n']").InnerText;
-                    string publicTime = node.SelectSingleNode("//span[@class='pbl-t']").InnerText;
-
+                    string href = channel1.GetAttributeValue("href", "");
+                    string title = channel1.InnerText.Trim();
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         var catalog = new Catalog();
                         catalog.Title = title;
-                        catalog.ImageUrl = imgUrl;
-                        catalog.BriefContent = briefContent;
-                        catalog.EditorName = editorName;
-                        catalog.EditorUrl = editorUrl;
-                        catalog.PublicTime = publicTime;
-                        //if (null == channel.Catalogs.Where(c => c.Title == catalog.Title).FirstOrDefault())
-                        if(!channel.Catalogs.Contains(catalog))
-                        {
-                            channel.Catalogs.Add(catalog);
-                        }
+                        channel.Catalogs.Add(catalog);
                     });
                 }
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
@@ -325,21 +341,26 @@ namespace YeeYanUWP.ViewModels
         /// <returns>Task awaiter</returns>
         protected override Task OnBindedViewLoad(MVVMSidekick.Views.IView view)
         {
+            Init();
+
+            return base.OnBindedViewLoad(view);
+        }
+
+        private async void Init()
+        {
             //Restore Channels from key ChannelsKey;
-            var result = StorageHelper.GetValueWithKey(Constant.ChannelsKey);
-            if (result != null)
+            var channels = await StorageHelper.GetViewModel<ObservableCollection<Channel>>(Constant.ChannelsKey);
+            if (channels != null)
             {
-                var channels = StorageHelper.Deserlialize<ObservableCollection<Channel>>(result.ToString());
+                //channels = CommonHelper.XmlDeserializer<ObservableCollection<Channel>>(result.ToString());
                 this.Channels = (ObservableCollection<Channel>)channels;
             }
             else
             {
                 GetChannelsViewModel();
             }
-
-            return base.OnBindedViewLoad(view);
         }
-        
+
         /// <summary>
         /// This will be invoked by view when the view fires Unload event and this viewmodel instance is still in view's  ViewModel property
         /// </summary>
@@ -348,7 +369,7 @@ namespace YeeYanUWP.ViewModels
         protected override Task OnBindedViewUnload(MVVMSidekick.Views.IView view)
         {
             //Save Channels 
-            StorageHelper.SetValueWithKey(Constant.ChannelsKey, Channels);
+            StorageHelper.SaveViewModel(Constant.ChannelsKey, Channels);
 
             return base.OnBindedViewUnload(view);
         }

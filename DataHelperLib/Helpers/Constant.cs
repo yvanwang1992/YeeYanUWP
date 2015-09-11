@@ -13,7 +13,7 @@ namespace DataHelperLib.Helpers
         public static readonly string NET_CANCELED = "网络请求被取消，请重试";
 
         //For Save Key/Value
-        public static readonly string ChannelsKey = "ChannelsKey";
+        public static readonly string ChannelsKey = "ChannelsKey.txt";
 
         public static readonly string ARTICLEURL = "http://article.yeeyan.org";
     }
